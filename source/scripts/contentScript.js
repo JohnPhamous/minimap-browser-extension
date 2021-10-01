@@ -1,6 +1,8 @@
 import html2canvas from "html2canvas";
 
 const minimapContainer = document.createElement("div");
+minimapContainer.id = "__minimapContainer__";
+minimapContainer.setAttribute("data-html2canvas-ignore", "");
 minimapContainer.style.position = "fixed";
 minimapContainer.style.width = "200px";
 minimapContainer.style.border = "8px solid hsl(60 7.7% 97.5%)";
@@ -57,3 +59,32 @@ html2canvas(document.body, {
   minimapContainer.appendChild(canvas);
   document.body.appendChild(minimapContainer);
 });
+
+let lastUrl = location.href;
+new MutationObserver(() => {
+  const url = location.href;
+  if (url !== lastUrl) {
+    lastUrl = url;
+    onUrlChange();
+  }
+}).observe(document, { subtree: true, childList: true });
+
+function onUrlChange() {
+  html2canvas(document.body, {
+    useCORS: true,
+    allowTaint: true,
+    foreignObjectRendering: true,
+  }).then(function (canvas) {
+    canvas.style.width = "100%";
+    canvas.style.height = "fit-content";
+    canvas.style.borderRadius = "8px";
+
+    while (minimapContainer.firstChild) {
+      minimapContainer.removeChild(minimapContainer.firstChild);
+    }
+
+    minimapContainer.appendChild(scrollPositionIndicator);
+    minimapContainer.appendChild(canvas);
+    document.body.appendChild(minimapContainer);
+  });
+}
